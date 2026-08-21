@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* The backdrop grey — see scripts/sample-backdrop.mjs */
+    --void: #1f1e22;
+    color-scheme: dark;
+  }
+
+  html {
+    background-color: var(--void);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--void);
+    @apply text-bone/90 antialiased;
+    /* Sequence scrubbing is driven by real scroll position, so smooth-scroll
+       would fight the animation. Keep it native. */
+    scroll-behavior: auto;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: theme('colors.champagne');
+    color: theme('colors.ink');
+  }
+
+  :focus-visible {
+    outline: 1px solid theme('colors.champagne');
+    outline-offset: 4px;
+  }
+
+  /* Optical sizing + tight tracking is what makes Inter read as display type */
+  h1, h2, h3 {
+    font-feature-settings: 'ss01' 1, 'cv05' 1;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  /* Hairline rules that survive on dark without looking grey */
+  .rule {
+    @apply border-bone/[0.14];
+  }
+
+  /**
+   * The sequence's studio backdrop is a gradient — near-black at the top,
+   * lit floor at the bottom — and it brightens as the camera pushes in, so no
+   * single page colour can match every edge. Feathering the canvas into the
+   * page guarantees the seam is invisible regardless, and reads as a
+   * cinematic vignette rather than a fix.
+   */
+  .feather-edges {
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0, #000 46px, #000 calc(100% - 64px), transparent 100%),
+      linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image:
+      linear-gradient(to bottom, transparent 0, #000 46px, #000 calc(100% - 64px), transparent 100%),
+      linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  /**
+   * The sequence is full-bleed, so overlay copy sometimes lands on a lit body
+   * panel. A layered halo plus a wide, edgeless scrim keeps it legible without
+   * putting a visible box on the artwork.
+   */
+  .text-halo {
+    text-shadow:
+      0 1px 2px rgb(0 0 0 / 0.95),
+      0 6px 24px rgb(0 0 0 / 0.9),
+      0 0 64px rgb(0 0 0 / 0.75);
+  }
+
+  /**
+   * Radii are deliberately smaller than the element box (95% wide, 46% tall
+   * from the anchored edge) so the gradient reaches full transparency *inside*
+   * its own bounds. Any larger and the element's edge becomes a visible
+   * rectangle on the artwork.
+   */
+  .scrim-l {
+    background: radial-gradient(
+      95% 46% at 0% 50%,
+      rgb(6 6 8 / 0.88) 0%,
+      rgb(6 6 8 / 0.55) 45%,
+      rgb(6 6 8 / 0) 100%
+    );
+  }
+
+  .scrim-r {
+    background: radial-gradient(
+      95% 46% at 100% 50%,
+      rgb(6 6 8 / 0.88) 0%,
+      rgb(6 6 8 / 0.55) 45%,
+      rgb(6 6 8 / 0) 100%
+    );
+  }
+
+  /**
+   * Film grain, drawn once as an SVG turbulence tile. Fixed position so it is
+   * composited once and never repaints while scrolling.
+   */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0.038;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Champagne hairline that grows on hover — used on links and rows. */
+  .underline-grow {
+    background-image: linear-gradient(theme('colors.champagne'), theme('colors.champagne'));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .underline-grow:hover {
+    background-size: 100% 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer utilities {
+  /**
+   * Callout labels can land anywhere — including on a lit battery plate or a
+   * red body panel — so they get a denser halo than the beat copy plus a small
+   * edgeless scrim. Same rule as the beat scrims: the gradient must reach full
+   * transparency inside its own box or the box edge shows.
+   */
+  .callout-halo {
+    text-shadow:
+      0 0 2px rgb(0 0 0 / 1),
+      0 1px 3px rgb(0 0 0 / 1),
+      0 0 12px rgb(0 0 0 / 0.95),
+      0 0 30px rgb(0 0 0 / 0.85);
+  }
+
+  .scrim-callout {
+    background: radial-gradient(
+      70% 48% at 50% 50%,
+      rgb(5 5 7 / 0.9) 0%,
+      rgb(5 5 7 / 0.55) 50%,
+      rgb(5 5 7 / 0) 100%
+    );
+  }
+}
